@@ -1,0 +1,79 @@
+/* @font-face {
+    font-family: "fanwood";
+    font-style: normal;
+    font-weight: normal;
+    src: url("fonts/Fanwood.otf");
+    font-display: swap;
+} */
+
+:root {
+    --color-primary: #0a192f;
+    --color-secondary: #01FFF4;
+    --color-text: #adbac7;
+    --pink: #FF1178;
+    --green: #7CFF01;
+    --yellow: #FFF205;
+    --font-family: "fanwoood";
+    --font-weight-strong: 500;
+    --font-size-h1: 4rem;
+    --font-size-h2: 3rem;
+    --font-size-h3: 2rem;
+    --font-size-h4: 1.35rem;
+    --font-size-text: 1.15rem;
+    --border-radius: 8px;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+
+/* Remove default margin */
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+
+/* Set core body defaults */
+
+body {
+    font-family: 'fanwood';
+    min-height: 100vh;
+    font-size: 100%;
+    line-height: 1.5;
+    text-rendering: optimizeSpeed;
+    overflow-x: hidden;
+    background-color: var(--color-primary);
+    color: var(--color-text);
+}
+
+
+/* Make images easier to work with */
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+
+/* Inherit fonts for inputs and buttons */
+
+input,
+button,
+textarea,
+select {
+    font: inherit;
+}
