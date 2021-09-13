@@ -1,5 +1,8 @@
 var gameBoard = (function() {
     let _board = new Array(9).fill(null);
+    let totalX = [];
+    let totalO = [];
+    let isDraw = null;
 
     board = document.querySelector(".game-board");
     fields = board.querySelectorAll(`[data-index]`);
@@ -12,14 +15,66 @@ var gameBoard = (function() {
     var setField = (num) => {
         if (_board[num] == null) {
             playerSign = game.currentPlayer().getSign();
+            playerSign === "X" ? totalX.push(Number(num)) : totalO.push(Number(num));
             field = board.querySelector(`[data-index='${num}']`);
             field.innerHTML = playerSign;
             _board[num] = playerSign;
-            console.log(_board);
         } else {
             console.log("Already Filled!", _board);
             return null;
         }
+    };
+
+    var checkDraw = () => {
+        if (!_board.some((el) => el === null)) {
+            isDraw = true;
+            return roundOver(false);
+        } else {
+            return false;
+        }
+    };
+
+    var checkWinner = () => {
+        const winningMoves = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+        winningMoves.forEach((move) => {
+            const countX = [];
+            const countO = [];
+            playerX = game.getPlayer1();
+            playerO = game.getPlayer2();
+            move.forEach((num) => {
+                if (checkDraw === false) return;
+                if (totalX.includes(num)) {
+                    countX.push(num);
+                    if (countX.length === 3) {
+                        isDraw = false;
+                        return roundOver(playerX, countX);
+                    }
+                }
+                if (totalO.includes(num)) {
+                    countO.push(num);
+                    if (countO.length === 3) {
+                        isDraw = false;
+                        return roundOver(playerO, countO);
+                    }
+                }
+            });
+        });
+    };
+
+    var roundOver = (winner, winCount) => {
+        console.log(winner.getSign(), "is Winner");
+        winner.incrementWin();
+        displayController.setRoundWin(winner.getWinCount());
+        displayController.endRound();
     };
 
     var render = () => {
@@ -38,11 +93,11 @@ var gameBoard = (function() {
     return {
         getField,
         setField,
+        checkWinner,
         render,
         clear,
     };
 })();
-gameBoard.render();
 
 var Players = function(sign, currentPlayer) {
     let _sign = sign;
@@ -98,13 +153,6 @@ var game = (() => {
     var _player1 = playerType.human("X", false);
     var _player2 = playerType.ai("O", false);
 
-    board.addEventListener("click", (e) => {
-        if (e.target.classList.contains("grid-fields")) {
-            const index = e.target.dataset.index;
-            play(index);
-        }
-    });
-
     var getPlayer1 = () => _player1;
 
     var getPlayer2 = () => _player2;
@@ -130,26 +178,14 @@ var game = (() => {
         }
     };
 
-    var play = function(num) {
-        gameBoard.setField(num);
-        checkWinner();
+    var play = function(e) {
+        if (e.target.classList.contains("grid-fields")) {
+            var index = e.target.dataset.index;
+        }
+        gameBoard.setField(index);
+        gameBoard.checkWinner();
     };
 
-    var checkWinner = function() {
-        const winningMoves = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6],
-        ];
-        winningMoves.forEach((move) => {
-            console.log(move);
-        });
-    };
     // var playAi = function(num) {
     //     console.log(num);
     //     gameBoard.setField(num, _player2);
@@ -159,6 +195,7 @@ var game = (() => {
     return {
         getPlayer1,
         getPlayer2,
+        play,
         // playHuman,
         // playAi,
         currentPlayer,
@@ -166,5 +203,24 @@ var game = (() => {
 })();
 
 var displayController = (function() {
-    console.log("display controller module");
+    const stat = document.querySelector(".stat");
+
+    var startRound = () => {
+        board.addEventListener("click", game.play);
+    };
+    var endRound = () => {
+        board.removeEventListener("click", game.play);
+    };
+    var setRoundWin = (winCount) => {
+        stat.textContent = winCount;
+    };
+    return {
+        startRound,
+        endRound,
+        setRoundWin,
+    };
 })();
+
+gameBoard.render();
+
+displayController.startRound();
