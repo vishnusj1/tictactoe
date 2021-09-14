@@ -6,16 +6,17 @@ var gameBoard = (function() {
 
     board = document.querySelector(".game-board");
     fields = board.querySelectorAll(`[data-index]`);
+    restartButton = document.querySelector(".restart-btn");
 
     var getField = (num) => {
         return _board[num];
-        // console.log(_board[num]);
     };
 
     var setField = (num) => {
         if (_board[num] == null) {
             playerSign = game.currentPlayer().getSign();
             playerSign === "X" ? totalX.push(Number(num)) : totalO.push(Number(num));
+            console.log(totalX, totalO);
             field = board.querySelector(`[data-index='${num}']`);
             field.innerHTML = playerSign;
             _board[num] = playerSign;
@@ -25,12 +26,16 @@ var gameBoard = (function() {
         }
     };
 
+    var refreshArray = () => {
+        for (i = 0; i < _board.length; i++) {
+            _board[i] = null;
+        }
+    };
+
     var checkDraw = () => {
         if (!_board.some((el) => el === null)) {
             isDraw = true;
             return roundOver(false);
-        } else {
-            return false;
         }
     };
 
@@ -51,7 +56,7 @@ var gameBoard = (function() {
             playerX = game.getPlayer1();
             playerO = game.getPlayer2();
             move.forEach((num) => {
-                if (checkDraw === false) return;
+                if (checkDraw() === false) return;
                 if (totalX.includes(num)) {
                     countX.push(num);
                     if (countX.length === 3) {
@@ -70,32 +75,47 @@ var gameBoard = (function() {
         });
     };
 
-    var roundOver = (winner, winCount) => {
-        console.log(winner.getSign(), "is Winner");
-        winner.incrementWin();
-        displayController.setRoundWin(winner.getWinCount());
-        displayController.endRound();
-    };
-
-    var render = () => {
-        fields.forEach((field, i) => {
-            field.innerHTML = _board[i];
-        });
-    };
-
-    var clear = () => {
-        for (i = 0; i < _board.length; i++) {
-            _board[i] = "";
+    var roundOver = (winner) => {
+        if (winner === false) {
+            console.log("Its a Draw");
+            game.currentPlayer();
+            displayController.endRound();
+        } else {
+            console.log(winner.getSign(), "is Winner");
+            winner.incrementWin();
+            displayController.setRoundWin(playerX, playerO);
+            totalO.length = 0;
+            totalX.length = 0;
+            game.currentPlayer();
+            if (winner.getWinCount() === 3) {
+                displayController.displayWinner(winner);
+                restartButton.addEventListener(
+                    "click",
+                    gameOver.bind(playerX, playerO),
+                    false
+                );
+                board.removeEventListener("click", game.play);
+            } else {
+                displayController.endRound();
+            }
         }
-        render();
+    };
+
+    var gameOver = () => {
+        playerX.resetWin();
+        playerO.resetWin();
+        window.setTimeout(() => {
+            displayController.setRoundWin(playerX, playerO);
+            displayController.endRound();
+        }, 1000);
+        console.log("It is Over");
     };
 
     return {
         getField,
         setField,
         checkWinner,
-        render,
-        clear,
+        refreshArray,
     };
 })();
 
@@ -103,26 +123,26 @@ var Players = function(sign, currentPlayer) {
     let _sign = sign;
     let _roundWin = 0;
 
-    var getSign = function() {
+    var getSign = () => {
         return _sign;
     };
-    var setSign = function(sign) {
+    var setSign = (sign) => {
         _sign = sign;
         return _sign;
     };
-    var getWinCount = function() {
+    var getWinCount = () => {
         return _roundWin;
     };
-    var incrementWin = function() {
+    var incrementWin = () => {
         _roundWin++;
     };
-    var resetWin = function() {
+    var resetWin = () => {
         _roundWin = 0;
     };
-    var getCurrent = function() {
+    var getCurrent = () => {
         return currentPlayer;
     };
-    var updateCurrentPlayer = function(isCurrent) {
+    var updateCurrentPlayer = (isCurrent) => {
         currentPlayer = isCurrent;
     };
     return {
@@ -141,6 +161,7 @@ var playerType = (function() {
         prototype = Players(sign, currentPlayer);
         return Object.assign({}, prototype);
     };
+
     var ai = function(sign, currentPlayer) {
         prototype = Players(sign, currentPlayer);
         return Object.assign({}, prototype);
@@ -150,7 +171,7 @@ var playerType = (function() {
 })();
 
 var game = (() => {
-    var _player1 = playerType.human("X", false);
+    var _player1 = playerType.human("X", false); //(sign, currentPlayer)
     var _player2 = playerType.ai("O", false);
 
     var getPlayer1 = () => _player1;
@@ -181,9 +202,9 @@ var game = (() => {
     var play = function(e) {
         if (e.target.classList.contains("grid-fields")) {
             var index = e.target.dataset.index;
+            gameBoard.setField(index);
+            gameBoard.checkWinner();
         }
-        gameBoard.setField(index);
-        gameBoard.checkWinner();
     };
 
     // var playAi = function(num) {
@@ -203,24 +224,68 @@ var game = (() => {
 })();
 
 var displayController = (function() {
-    const stat = document.querySelector(".stat");
+    const playerOne = document.querySelector(".one");
+    const playerTwo = document.querySelector(".two");
+    const statOne = playerOne.querySelector(".stat");
+    const statTwo = playerTwo.querySelector(".stat");
+    const roundCard = document.querySelector(".round-card");
+    const roundStat = roundCard.querySelector(".round-stat");
+    const winnerCard = document.querySelector(".winner-card");
+    const gameBoardContainer = document.querySelector(".container");
 
     var startRound = () => {
         board.addEventListener("click", game.play);
+        // roundCardDisplay();
     };
+
     var endRound = () => {
         board.removeEventListener("click", game.play);
+        clear();
+        // roundCard.classList.remove(".toggle-off");
     };
-    var setRoundWin = (winCount) => {
-        stat.textContent = winCount;
+
+    var setRoundWin = (playerX, playerO, winner) => {
+        statOne.textContent = playerX.getWinCount();
+        statTwo.textContent = playerO.getWinCount();
     };
+
+    var render = () => {
+        gameBoardContainer.classList.add("toggle-on");
+        fields.forEach((field, i) => {
+            field.innerHTML = gameBoard.getField(i);
+        });
+        startRound();
+    };
+
+    var clear = () => {
+        gameBoard.refreshArray();
+        window.setTimeout(() => {
+            render();
+        }, 1000);
+    };
+
+    var roundCardDisplay = () => {
+        setTimeout(() => {
+            roundCard.classList.add("toggle-off");
+        }, 1000);
+    };
+
+    var displayWinner = (winner) => {
+        winnerCard.classList.add("toggle-on");
+        winnerCard.textContent = `${winner.getSign()} has won the game. `;
+        console.log(`${winner.getSign()} is the winner,YAY`);
+    };
+
     return {
         startRound,
         endRound,
         setRoundWin,
+        render,
+        clear,
+        roundCardDisplay,
+        displayWinner,
     };
 })();
-
-gameBoard.render();
-
-displayController.startRound();
+// displayController.roundCardDisplay();
+displayController.render();
+// displayController.startRound();

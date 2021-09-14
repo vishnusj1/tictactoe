@@ -13,8 +13,19 @@
     <header>
     </header>
     <div class="header">
-        <h1>Tic-Tac-Toe</h1>
+        <h1>Tic Tac Toe</h1>
     </div>
+    <!-- <div class="start-container">
+
+        <div class="mode-selector">
+            <div class="mode pvp">Player vs Player</div>
+            <div class="mode pvb">Player vs Bot</div>
+            <button class="start-btn btn">
+                Start
+            </button>
+        </div>
+
+    </div> -->
     <div class="container">
         <div class="score-board">
             <div class="player-container">
@@ -31,6 +42,14 @@
             </div>
         </div>
         <div class="game-board">
+            <div class="card round-card">
+                <span class="round-stat"><h4>Round <span class="round-count">1</span></h4>
+                </span>
+            </div>
+            <div class="card winner-card">
+                <span id="win-stat"><h4>WINNER!</h4>
+                </span>
+            </div>
             <div class="board-grid">
                 <div class="grid-fields" data-index='0'></div>
                 <div class="grid-fields" data-index='1'></div>
@@ -43,7 +62,7 @@
                 <div class="grid-fields" data-index='8'></div>
             </div>
         </div>
-        <button>Restart</button>
+        <button class="restart-btn btn">Restart</button>
     </div>
     <div class="footer">
 

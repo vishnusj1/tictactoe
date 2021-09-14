@@ -78,26 +78,126 @@ select {
     font: inherit;
 }
 
+button {
+    border: none;
+}
+
+.start-btn {
+    position: relative;
+    margin: 0 auto;
+}
+
+.restart-btn {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.btn {
+    padding: 3px 12px;
+    background-color: #ff1178;
+    cursor: pointer;
+}
+
 .header {
     height: 80px;
     text-align: center;
+    font-size: 1rem;
+}
+
+.start-container {
+    padding: 0 60px;
+    height: 100vh;
 }
 
 .container {
     padding: 0 60px;
+    display: none;
 }
 
 @media only screen and (min-device-width: 360px) and (max-device-width: 812px) and (-webkit-min-device-pixel-ratio: 2) {
-    .container {
-        padding: 18px;
+    .start-container {
+        padding: 0 18px;
     }
+    .container {
+        padding: 0 18px;
+    }
+}
+
+.container.toggle-on {
+    display: block;
+}
+
+.mode-selector {
+    border: 1px solid #01fff4;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.mode {
+    background-color: var(--pink);
+    color: var(--color-primary);
+    border: 1px solid var(--pink);
+    height: 100px;
+    width: 300px;
 }
 
 .game-board {
     margin-top: 20px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.card {
+    position: absolute;
+    background-color: var(--pink);
+    color: var(--color-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: scaleUp 0.8s;
+    height: 90px;
+    width: 390px;
+    display: none;
+    font-size: var(--font-size-h4);
+}
+
+@keyframes scaleUp {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.toggle-on {
+    /* animation: scaleDown 0.4s;
+    transform: scale(0); */
+    display: flex;
+}
+
+@keyframes scaleDown {
+    from {
+        transform: scale(1)
+    }
+    to {
+        transform: scale(0);
+    }
+}
+
+.round-stat {
+    text-transform: uppercase;
+    color: #0a192f;
+    font-size: var(--font-size-h4);
 }
 
 .score-board {
