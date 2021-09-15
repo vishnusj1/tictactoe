@@ -82,6 +82,25 @@ button {
     border: none;
 }
 
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+.menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn {
+    padding: 3px 15px;
+    background-color: #ff1178;
+    cursor: pointer;
+    width: 75.333px;
+}
+
 .start-btn {
     position: relative;
     margin: 0 auto;
@@ -89,14 +108,16 @@ button {
 
 .restart-btn {
     position: relative;
-    left: 50%;
+    left: 45%;
     transform: translateX(-50%);
+    margin-right: 5px;
 }
 
-.btn {
-    padding: 3px 12px;
-    background-color: #ff1178;
-    cursor: pointer;
+.mode-btn {
+    position: relative;
+    left: 45%;
+    transform: translateX(-50%);
+    margin-left: 5px;
 }
 
 .header {
@@ -121,6 +142,9 @@ button {
     }
     .container {
         padding: 0 18px;
+    }
+    .score-container {
+        margin: 0 10px;
     }
 }
 
@@ -194,40 +218,49 @@ button {
     }
 }
 
-.round-stat {
-    text-transform: uppercase;
-    color: #0a192f;
+.round-card {
+    position: absolute;
+    margin-top: 10px;
+    left: 50%;
+    transform: translate(-50%);
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    background-color: var(--pink);
+    color: var(--color-primary);
     font-size: var(--font-size-h4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .score-board {
     margin-top: 20px;
-    border: 1px #01fff4 solid;
-    height: 100px;
+    height: 70px;
     display: flex;
 }
 
-.player-container {
-    padding: 10px 0;
+.score-container {
+    margin: 0 20px;
     flex: auto;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    font-size: var(--font-size-h4);
 }
 
 .player {
+    /* background-color: var(--color-text); */
+    margin: 0 18px;
+    color: var(--color-text);
     position: relative;
-    width: 100%;
+    width: 30%;
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-}
-
-.name {
-    position: absolute;
-    top: 0;
+    /* border: 1px solid var(--color-secondary); */
 }
 
 .board-grid {

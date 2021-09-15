@@ -28,24 +28,21 @@
     </div> -->
     <div class="container">
         <div class="score-board">
-            <div class="player-container">
+            <div class="score-container">
                 <div class="player one">
                     <div class="name">Player 1</div>
                     <div class="stat">0</div>
                 </div>
-            </div>
-            <div class="player-container">
                 <div class="player two">
                     <div class="name">Player 2</div>
                     <div class="stat">0</div>
                 </div>
             </div>
+            <div class="round-card">
+                <div class="round-stat">1</div>
+            </div>
         </div>
         <div class="game-board">
-            <div class="card round-card">
-                <span class="round-stat"><h4>Round <span class="round-count">1</span></h4>
-                </span>
-            </div>
             <div class="card winner-card">
                 <span id="win-stat"><h4>WINNER!</h4>
                 </span>
@@ -62,7 +59,15 @@
                 <div class="grid-fields" data-index='8'></div>
             </div>
         </div>
-        <button class="restart-btn btn">Restart</button>
+        <ul class="menu">
+            <li>
+                <button class="btn restart-btn">Restart</button>
+            </li>
+            <li>
+                <button class="btn mode-btn">vs Bot</button>
+            </li>
+        </ul>
+
     </div>
     <div class="footer">
 

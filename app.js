@@ -3,10 +3,15 @@ var gameBoard = (function() {
     let totalX = [];
     let totalO = [];
     let isDraw = null;
+    let roundCount = 1;
 
     board = document.querySelector(".game-board");
     fields = board.querySelectorAll(`[data-index]`);
     restartButton = document.querySelector(".restart-btn");
+
+    var getBoardArray = () => {
+        return _board;
+    };
 
     var getField = (num) => {
         return _board[num];
@@ -83,6 +88,7 @@ var gameBoard = (function() {
         } else {
             console.log(winner.getSign(), "is Winner");
             winner.incrementWin();
+            setRoundCount();
             displayController.setRoundWin(playerX, playerO);
             totalO.length = 0;
             totalX.length = 0;
@@ -102,49 +108,78 @@ var gameBoard = (function() {
     };
 
     var gameOver = () => {
+        resetRoundCount();
         playerX.resetWin();
         playerO.resetWin();
         window.setTimeout(() => {
             displayController.setRoundWin(playerX, playerO);
             displayController.endRound();
         }, 1000);
-        console.log("It is Over");
+        console.log("Restarting");
+    };
+
+    var getRoundCount = () => {
+        return roundCount;
+    };
+
+    var setRoundCount = () => {
+        return roundCount++;
+    };
+
+    var resetRoundCount = () => {
+        return (roundCount = 1);
     };
 
     return {
+        getBoardArray,
         getField,
         setField,
         checkWinner,
         refreshArray,
+        getRoundCount,
+        setRoundCount,
     };
 })();
 
-var Players = function(sign, currentPlayer) {
+var Player = function(sign, currentPlayer, playerType) {
     let _sign = sign;
     let _roundWin = 0;
 
     var getSign = () => {
         return _sign;
     };
+
     var setSign = (sign) => {
         _sign = sign;
         return _sign;
     };
+
     var getWinCount = () => {
         return _roundWin;
     };
+
     var incrementWin = () => {
-        _roundWin++;
+        return _roundWin++;
     };
+
     var resetWin = () => {
-        _roundWin = 0;
+        return (_roundWin = 0);
     };
+
     var getCurrent = () => {
         return currentPlayer;
     };
+
     var updateCurrentPlayer = (isCurrent) => {
-        currentPlayer = isCurrent;
+        return (currentPlayer = isCurrent);
     };
+
+    var updateType = (type) => {
+        return (playerType = type);
+    };
+
+    var getType = () => playerType;
+
     return {
         getSign,
         setSign,
@@ -153,30 +188,39 @@ var Players = function(sign, currentPlayer) {
         resetWin,
         getCurrent,
         updateCurrentPlayer,
+        getType,
+        updateType,
     };
 };
 
-var playerType = (function() {
-    var human = function(sign, currentPlayer) {
-        prototype = Players(sign, currentPlayer);
-        return Object.assign({}, prototype);
+var botController = (function() {
+    console.log("bots");
+    var availableMoves = () => {
+        const possibleMoves = [];
+        const ar = gameBoard.getBoardArray();
+        ar.forEach((el, i) => {
+            if (el === null) {
+                possibleMoves.push(i);
+                console.log(possibleMoves);
+            }
+        });
+        const randomMove =
+            possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+        console.log(randomMove);
     };
-
-    var ai = function(sign, currentPlayer) {
-        prototype = Players(sign, currentPlayer);
-        return Object.assign({}, prototype);
+    return {
+        availableMoves,
     };
-
-    return { human, ai };
 })();
 
 var game = (() => {
-    var _player1 = playerType.human("X", false); //(sign, currentPlayer)
-    var _player2 = playerType.ai("O", false);
+    var _player1 = Player("X", false, "human"); //(sign, currentPlayer)
+    var _player2 = Player("O", false, "human");
+    var _aiPlayer = Player("O", false, "ai");
 
     var getPlayer1 = () => _player1;
-
     var getPlayer2 = () => _player2;
+    var getAiPlayer = () => _aiPlayer;
 
     var currentPlayer = () => {
         if (_player1.getCurrent() === false && _player2.getCurrent() === false) {
@@ -207,18 +251,11 @@ var game = (() => {
         }
     };
 
-    // var playAi = function(num) {
-    //     console.log(num);
-    //     gameBoard.setField(num, _player2);
-    //     checkWin(gameBoard, _player2);
-    // }
-
     return {
         getPlayer1,
         getPlayer2,
+        getAiPlayer,
         play,
-        // playHuman,
-        // playAi,
         currentPlayer,
     };
 })();
@@ -228,20 +265,26 @@ var displayController = (function() {
     const playerTwo = document.querySelector(".two");
     const statOne = playerOne.querySelector(".stat");
     const statTwo = playerTwo.querySelector(".stat");
-    const roundCard = document.querySelector(".round-card");
-    const roundStat = roundCard.querySelector(".round-stat");
+    const roundStat = document.querySelector(".round-stat");
     const winnerCard = document.querySelector(".winner-card");
     const gameBoardContainer = document.querySelector(".container");
+    const modeButton = document.querySelector(".mode-btn");
+
+    var playerChange = (e) => {
+        modeButton.textContent === "vs Bot" ?
+            (modeButton.textContent = "PvP") :
+            (modeButton.textContent = "vs Bot");
+        console.log(game.getAiPlayer().getType());
+        update;
+    };
 
     var startRound = () => {
         board.addEventListener("click", game.play);
-        // roundCardDisplay();
     };
 
     var endRound = () => {
         board.removeEventListener("click", game.play);
         clear();
-        // roundCard.classList.remove(".toggle-off");
     };
 
     var setRoundWin = (playerX, playerO, winner) => {
@@ -249,43 +292,42 @@ var displayController = (function() {
         statTwo.textContent = playerO.getWinCount();
     };
 
+    var setRoundCount = () => {
+        roundStat.textContent = gameBoard.getRoundCount();
+    };
+
     var render = () => {
+        modeButton.addEventListener("click", playerChange);
         gameBoardContainer.classList.add("toggle-on");
         fields.forEach((field, i) => {
             field.innerHTML = gameBoard.getField(i);
         });
         startRound();
+        setRoundCount();
     };
 
     var clear = () => {
         gameBoard.refreshArray();
         window.setTimeout(() => {
             render();
-        }, 1000);
-    };
-
-    var roundCardDisplay = () => {
-        setTimeout(() => {
-            roundCard.classList.add("toggle-off");
+            winnerCard.classList.remove("toggle-on");
         }, 1000);
     };
 
     var displayWinner = (winner) => {
         winnerCard.classList.add("toggle-on");
         winnerCard.textContent = `${winner.getSign()} has won the game. `;
-        console.log(`${winner.getSign()} is the winner,YAY`);
     };
 
     return {
+        playerChange,
         startRound,
         endRound,
         setRoundWin,
         render,
         clear,
-        roundCardDisplay,
         displayWinner,
     };
 })();
-// displayController.roundCardDisplay();
+
 displayController.render();
-// displayController.startRound();
