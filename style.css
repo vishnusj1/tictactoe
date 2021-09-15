@@ -114,6 +114,9 @@ ul {
 }
 
 .mode-btn {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
     position: relative;
     left: 45%;
     transform: translateX(-50%);
