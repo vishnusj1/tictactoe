@@ -32,6 +32,10 @@ var gameBoard = (function() {
     };
 
     var setFieldAi = (num, player) => {
+        if (player == null) {
+            _board[num] = null;
+            return;
+        }
         console.log("set field for ai");
         if (_board[num] === null) {
             playerSign = player.getSign();
@@ -59,7 +63,7 @@ var gameBoard = (function() {
     var checkForDraw = () => {
         for (let i = 0; i < 9; i++) {
             const field = getField(i);
-            if (field == undefined) {
+            if (field == null) {
                 return false;
             }
         }
@@ -83,21 +87,22 @@ var gameBoard = (function() {
             playerX = game.getPlayer1();
             playerO = game.getPlayer2();
             move.forEach((num) => {
-                if (checkDraw() === false) return;
+                if (checkForDraw() === true) {
+                    roundOver(false);
+                }
                 if (totalX.includes(num)) {
                     countX.push(num);
                     if (countX.length === 3) {
-                        isDraw = false;
                         return roundOver(playerX, countX);
                     }
                 }
                 if (totalO.includes(num)) {
                     countO.push(num);
                     if (countO.length === 3) {
-                        isDraw = false;
                         return roundOver(playerO, countO);
                     }
                 }
+                return false;
             });
         });
     };
@@ -233,74 +238,86 @@ var Player = function(sign, currentPlayer, playerType) {
 };
 
 var botController = (function() {
-    var availableMoves = () => {
+    const ar = gameBoard;
+    var _availableMoves = () => {
         const possibleMoves = [];
-        const ar = gameBoard.getBoardArray();
-        ar.forEach((el, i) => {
+        ar.getBoardArray().forEach((el, i) => {
             if (el === null) {
                 possibleMoves.push(i);
-                // console.log(possibleMoves);
             }
         });
 
-        var findBestMove = (player) => {
-            let bestScore = null;
-            let bestMove;
-            ar.forEach((el, i) => {
-                console.log(ar[i]);
-                if (ar[i] === null); {
-                    ar[i] = player.getSign();
-                    score = minimax(ar, 0, false, player);
-                    ar[i] = "";
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestMove = ar[i];
+        var findBestMove = (moves, player) => {
+            var bestMove;
+
+            if (player === game.getPlayer2()) {
+                let bestScore = -1000;
+                for (var i = 0; i < moves.length; i++) {
+                    if (moves[i].score > bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
                     }
-                    console.log(bestMove);
                 }
-            });
+            } else if (player === game.getPlayer1) {
+                let bestScore = 1000;
+                for (var i = 0; i < moves.length; i++) {
+                    if (moves[i].score < bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            }
+            return moves[bestMove];
         };
 
-        var minimax = (board, depth, isMaximizingPlayer, player) => {
-            let result = gameBoard.checkForDraw();
-            if (result === true) {
-                return (score = 0);
+        var minimax = (board, player) => {
+            let isDraw = board.checkForDraw();
+            if (isDraw === true) {
+                return { score: 0 };
+            } else if (board.checkWinner()) {
+                if (player.getSign() == game.getPlayer1().getSign()) {
+                    return { score: 10 };
+                } else if (player.getSign() == game.getPlayer2().getSign()) {
+                    return { score: -10 };
+                }
             }
-            if (isMaximizingPlayer) {
-                let bestScore = -Infinity;
-                board.forEach((el, i) => {
-                    if (board[i] === null) {
-                        board[i] = player.getSign();
-                        score = minimax(ar, depth + 1, false, player);
-                        board[i] === "";
-                        return (score = Math.max(score, bestScore));
-                        // console.log(max(score, bestScore));
-                    }
-                });
-            } else {
-                let bestScore = Infinity;
-                board.forEach((el, i) => {
-                    if (board[i] === null) {
-                        board[i] = player.getSign();
-                        let score = minimax(ar, depth + 1, true, player);
-                        board[i] === "";
-                        return (score = Math.min(score, bestScore));
-                    }
-                });
+
+            var moves = [];
+            for (var i = 0; i < possibleMoves.length; i++) {
+                var move = {};
+                move.index = possibleMoves[i];
+                board.setFieldAi(possibleMoves[i], player);
+                if (player.getSign() == game.getPlayer2().getSign()) {
+                    var result = minimax(board, game.getPlayer1());
+                    move.score = result.score;
+                } else {
+                    var result = minimax(board, game.getPlayer2());
+                    move.score = result.score;
+                }
+                board.setFieldAi(possibleMoves[i], null);
+
+                moves.push(move);
             }
+            return findBestMove(moves, player);
         };
 
         const randomMove =
             possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-        return Object.freeze({ possibleMoves, randomMove, findBestMove });
+        return Object.freeze({ possibleMoves, randomMove, findBestMove, minimax });
     };
 
-    var botStep = (player) => {
-        return availableMoves().findBestMove(player);
+    var randomStep = () => {
+        return _availableMoves().randomMove;
+    };
+
+    var aiStep = (player) => {
+        const choice = _availableMoves().minimax(ar, player).index;
+        return choice;
     };
 
     return {
-        botStep,
+        randomStep,
+        aiStep,
     };
 })();
 
@@ -349,8 +366,13 @@ var game = (() => {
     };
 
     var aiPlay = (player) => {
-        const index = botController.botStep(player);
+        // const index = botController.aiStep(player);
+        const index = botController.randomStep();
+        console.log(index);
         gameBoard.setFieldAi(index, player);
+        gameBoard.checkWinner();
+        player = currentPlayer();
+        checkPlayerType(player);
     };
 
     var checkPlayerType = (player) => {
