@@ -56,6 +56,16 @@ var gameBoard = (function() {
         }
     };
 
+    var checkForDraw = () => {
+        for (let i = 0; i < 9; i++) {
+            const field = getField(i);
+            if (field == undefined) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     var checkWinner = () => {
         const winningMoves = [
             [0, 1, 2],
@@ -98,13 +108,12 @@ var gameBoard = (function() {
             // game.currentPlayer();
             displayController.endRound();
         } else {
-            console.log(winner.getSign(), "is Winner");
             winner.incrementWin();
             setRoundCount();
             displayController.setRoundWin(playerX, playerO);
             totalO.length = 0;
             totalX.length = 0;
-            // game.currentPlayer();
+            game.currentPlayer();
             if (winner.getWinCount() === 3) {
                 displayController.displayWinner(winner);
                 restartButton.addEventListener(
@@ -151,6 +160,7 @@ var gameBoard = (function() {
         getField,
         setField,
         setFieldAi,
+        checkForDraw,
         checkWinner,
         refreshArray,
         getRoundCount,
@@ -223,23 +233,70 @@ var Player = function(sign, currentPlayer, playerType) {
 };
 
 var botController = (function() {
-    console.log("bots");
     var availableMoves = () => {
         const possibleMoves = [];
         const ar = gameBoard.getBoardArray();
         ar.forEach((el, i) => {
             if (el === null) {
                 possibleMoves.push(i);
-                console.log(possibleMoves);
+                // console.log(possibleMoves);
             }
         });
+
+        var findBestMove = (player) => {
+            let bestScore = null;
+            let bestMove;
+            ar.forEach((el, i) => {
+                console.log(ar[i]);
+                if (ar[i] === null); {
+                    ar[i] = player.getSign();
+                    score = minimax(ar, 0, false, player);
+                    ar[i] = "";
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = ar[i];
+                    }
+                    console.log(bestMove);
+                }
+            });
+        };
+
+        var minimax = (board, depth, isMaximizingPlayer, player) => {
+            let result = gameBoard.checkForDraw();
+            if (result === true) {
+                return (score = 0);
+            }
+            if (isMaximizingPlayer) {
+                let bestScore = -Infinity;
+                board.forEach((el, i) => {
+                    if (board[i] === null) {
+                        board[i] = player.getSign();
+                        score = minimax(ar, depth + 1, false, player);
+                        board[i] === "";
+                        return (score = Math.max(score, bestScore));
+                        // console.log(max(score, bestScore));
+                    }
+                });
+            } else {
+                let bestScore = Infinity;
+                board.forEach((el, i) => {
+                    if (board[i] === null) {
+                        board[i] = player.getSign();
+                        let score = minimax(ar, depth + 1, true, player);
+                        board[i] === "";
+                        return (score = Math.min(score, bestScore));
+                    }
+                });
+            }
+        };
+
         const randomMove =
             possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-        return Object.freeze({ possibleMoves, randomMove });
+        return Object.freeze({ possibleMoves, randomMove, findBestMove });
     };
 
-    var botStep = () => {
-        return availableMoves().randomMove;
+    var botStep = (player) => {
+        return availableMoves().findBestMove(player);
     };
 
     return {
@@ -292,8 +349,7 @@ var game = (() => {
     };
 
     var aiPlay = (player) => {
-        const index = botController.botStep();
-        console.log(index);
+        const index = botController.botStep(player);
         gameBoard.setFieldAi(index, player);
     };
 
@@ -304,6 +360,8 @@ var game = (() => {
                 aiPlay(player);
                 board.addEventListener("click", game.play);
             }, 200);
+        } else if (player.getType() === "human") {
+            currentPlayer();
         }
     };
 
@@ -328,7 +386,7 @@ var displayController = (function() {
     const gameBoardContainer = document.querySelector(".container");
     const modeButton = document.querySelector(".mode-btn");
 
-    var changeGameMode = (e) => {
+    var changeGameMode = () => {
         playerX = game.getPlayer1();
         playerO = game.getPlayer2();
         if (modeButton.textContent === "1P") {
